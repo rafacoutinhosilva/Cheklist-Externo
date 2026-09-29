@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Painel de Vistorias – PortoEX</title>
+<style>
+  :root{
+    --navy:#1B1F4B; --navy2:#252a6a; --orange:#F26522; --orange2:#d4501a;
+    --green:#16a34a; --red:#dc2626; --gray:#64748b; --light:#f1f5f9;
+    --border:#e2e8f0; --white:#fff; --text:#1e293b; --text2:#475569; --bg:#eef0f6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  button{font-family:inherit;}
+  :focus-visible{outline:3px solid rgba(242,101,34,.55);outline-offset:2px;}
+  .hidden{display:none!important;}
+
+  /* Header */
+  .hdr{background:var(--navy);box-shadow:0 4px 20px rgba(0,0,0,.25);position:sticky;top:0;z-index:50;}
+  .hdr-inner{max-width:1200px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:12px;}
+  .hdr-bar{width:4px;height:34px;background:var(--orange);border-radius:3px;flex-shrink:0;}
+  .hdr-sub{font-size:11px;color:#94a3b8;font-weight:600;}
+  .hdr-title{font-size:17px;font-weight:800;color:#fff;}
+  .hdr-user{margin-left:auto;display:flex;align-items:center;gap:12px;color:#cbd5e1;font-size:12px;}
+  .btn-ghost{background:transparent;border:1.5px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;}
+  .btn-ghost:hover{border-color:var(--orange);}
+  .hdr-accent{height:3px;background:linear-gradient(90deg,var(--orange),transparent);}
+
+  /* Login */
+  .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .login{background:#fff;border-radius:16px;padding:28px 24px;width:100%;max-width:380px;box-shadow:0 10px 40px rgba(27,31,75,.15);border-top:5px solid var(--orange);}
+  .login h1{font-size:19px;color:var(--navy);font-weight:800;margin-bottom:4px;}
+  .login p{font-size:13px;color:var(--gray);margin-bottom:20px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:6px;}
+  .field input,.inp{width:100%;border:2px solid var(--border);border-radius:10px;padding:10px 13px;font-size:14px;font-family:inherit;color:var(--text);background:#fff;}
+  .field input:focus,.inp:focus{outline:none;border-color:var(--navy);}
+  .btn{width:100%;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;font-size:14px;font-weight:800;cursor:pointer;}
+  .btn:disabled{opacity:.6;cursor:not-allowed;}
+  .msg{font-size:12px;font-weight:600;margin-top:12px;color:var(--red);min-height:16px;}
+
+  /* Main */
+  .main{max-width:1200px;margin:0 auto;padding:20px 20px 60px;}
+  .summary{display:flex;gap:28px;align-items:baseline;flex-wrap:wrap;margin-bottom:18px;padding:0 2px;}
+  .sum-item{display:flex;align-items:baseline;gap:8px;}
+  .sum-item b{font-size:26px;font-weight:800;color:var(--navy);line-height:1;}
+  .sum-item span{font-size:13px;color:var(--gray);font-weight:600;}
+  .sum-item.ok b{color:var(--green);}
+  .sum-item.nok b{color:var(--red);}
+
+  .toolbar{background:#fff;border-radius:14px;padding:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,.05);margin-bottom:14px;}
+  .toolbar .inp{width:auto;padding:8px 12px;font-size:13px;}
+  .toolbar .search{flex:1;min-width:200px;}
+  .seg{display:flex;border:2px solid var(--border);border-radius:10px;overflow:hidden;}
+  .seg button{border:none;background:#fff;padding:8px 12px;font-size:12px;font-weight:700;color:var(--gray);cursor:pointer;}
+  .seg button.on{background:var(--navy);color:#fff;}
+  .dates{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gray);font-weight:600;}
+  .btn-sm{border:2px solid var(--border);background:#fff;border-radius:10px;padding:8px 12px;font-size:12px;font-weight:700;color:var(--navy);cursor:pointer;}
+  .btn-sm:hover{border-color:var(--navy);}
+
+  /* Table */
+  .tbl-wrap{background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.05);overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;font-size:11px;font-weight:700;color:var(--gray);padding:12px 14px;border-bottom:2px solid var(--border);white-space:nowrap;background:#fafbfd;}
+  td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  tbody tr{cursor:pointer;}
+  tbody tr:hover{background:#f8fafc;}
+  tbody tr:last-child td{border-bottom:none;}
+  .muted{color:var(--gray);font-size:12px;}
+
+  /* Placa estilo Mercosul — elemento de destaque */
+  .plate{display:inline-flex;flex-direction:column;border:2px solid var(--navy);border-radius:5px;overflow:hidden;background:#fff;min-width:86px;}
+  .plate i{display:block;height:6px;background:#1d4ed8;}
+  .plate b{font-family:'Arial Narrow','Roboto Condensed',Arial,sans-serif;font-size:15px;letter-spacing:.08em;font-weight:800;color:#111827;text-align:center;padding:2px 6px 1px;}
+  .plate.lg{min-width:150px;}
+  .plate.lg i{height:10px;}
+  .plate.lg b{font-size:26px;padding:4px 10px 2px;}
+
+  .ck{display:inline-flex;gap:5px;}
+  .ck span{font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;}
+  .ck .s{background:#dcfce7;color:var(--green);}
+  .ck .n{background:#fee2e2;color:var(--red);}
+  .status{display:inline-block;font-size:11px;font-weight:800;border-radius:99px;padding:3px 10px;white-space:nowrap;}
+  .status.ok{background:#dcfce7;color:var(--green);}
+  .status.nok{background:#fee2e2;color:var(--red);}
+  .empty{padding:48px 20px;text-align:center;color:var(--gray);font-size:14px;}
+
+  /* Drawer */
+  .overlay{position:fixed;inset:0;background:rgba(15,18,45,.45);z-index:80;}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--bg);z-index:90;overflow-y:auto;box-shadow:-10px 0 40px rgba(0,0,0,.25);animation:slide .22s ease;}
+  @keyframes slide{from{transform:translateX(30px);opacity:.4;}to{transform:none;opacity:1;}}
+  @media (prefers-reduced-motion:reduce){.drawer{animation:none;}}
+  .dr-hdr{background:var(--navy);padding:18px 20px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:2;border-bottom:3px solid var(--orange);}
+  .dr-hdr .who{color:#fff;}
+  .dr-hdr .who div{font-size:15px;font-weight:800;}
+  .dr-hdr .who small{font-size:12px;color:#94a3b8;}
+  .dr-close{margin-left:auto;width:34px;height:34px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:#fff;font-size:18px;cursor:pointer;flex-shrink:0;}
+  .dr-body{padding:16px;}
+  .card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+  .card h3{font-size:14px;font-weight:800;color:var(--navy);margin-bottom:12px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .kv p{font-size:11px;color:var(--gray);font-weight:700;margin-bottom:2px;}
+  .kv span{font-size:14px;font-weight:600;}
+  .row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;}
+  .row:last-child{border-bottom:none;}
+  .row small{display:block;color:var(--gray);font-style:italic;margin-top:2px;}
+  .obs{background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:10px 12px;font-size:13px;color:#92400e;line-height:1.5;white-space:pre-wrap;}
+  .photos{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .ph{border-radius:10px;overflow:hidden;border:2px solid var(--border);background:var(--light);cursor:zoom-in;}
+  .ph img{width:100%;height:120px;object-fit:cover;display:block;}
+  .ph p{font-size:11px;color:var(--gray);text-align:center;padding:5px;font-weight:600;}
+  .ph.none{cursor:default;height:148px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--red);font-weight:600;border-style:dashed;}
+  .sig{background:var(--light);border-radius:10px;padding:8px;text-align:center;}
+  .sig img{max-width:100%;max-height:110px;}
+  .dr-foot{position:sticky;bottom:0;background:#fff;padding:12px 16px;box-shadow:0 -4px 20px rgba(0,0,0,.08);}
+  .btn-pdf{width:100%;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--orange),var(--orange2));color:#fff;font-size:14px;font-weight:800;cursor:pointer;}
+  .btn-pdf:disabled{opacity:.6;cursor:not-allowed;}
+  .loading{padding:30px;text-align:center;color:var(--gray);font-size:13px;}
+
+  .zoom{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:120;display:flex;align-items:center;justify-content:center;padding:20px;cursor:zoom-out;}
+  .zoom img{max-width:100%;max-height:100%;border-radius:8px;}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;z-index:200;opacity:0;pointer-events:none;transition:opacity .25s;}
+  .toast.show{opacity:1;}
+
+  @media(max-width:720px){
+    .hdr-user .email{display:none;}
+    thead{display:none;}
+    table,tbody,tr,td{display:block;width:100%;}
+    tbody tr{padding:12px 14px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:auto 1fr auto;gap:4px 12px;align-items:center;}
+    td{padding:0;border:none;}
+    td.c-placa{grid-row:span 2;}
+    td.c-data,td.c-vist,td.c-ck{display:none;}
+    td.c-status{grid-row:span 2;}
+    .grid2{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="viewLogin">
+  <div class="login">
+    <h1>Painel de vistorias</h1>
+    <p>Checklists enviados pelos agregados. Acesso restrito à equipe PortoEX.</p>
+    <div class="field">
+      <label for="email">E-mail</label>
+      <input type="email" id="email" autocomplete="username">
+    </div>
+    <div class="field">
+      <label for="senha">Senha</label>
+      <input type="password" id="senha" autocomplete="current-password">
+    </div>
+    <button class="btn" id="btnLogin" onclick="login()">Entrar</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="viewApp" class="hidden">
+  <div class="hdr">
+    <div class="hdr-inner">
+      <div class="hdr-bar"></div>
+      <div>
+        <div class="hdr-sub">PortoEX Transportes · Agregados</div>
+        <div class="hdr-title">Painel de vistorias</div>
+      </div>
+      <div class="hdr-user">
+        <span class="email" id="userEmail"></span>
+        <button class="btn-ghost" onclick="logout()">Sair</button>
+      </div>
+    </div>
+    <div class="hdr-accent"></div>
+  </div>
+
+  <div class="main">
+    <div class="summary">
+      <div class="sum-item"><b id="sTotal">0</b><span>vistorias</span></div>
+      <div class="sum-item ok"><b id="sOk">0</b><span>conformes</span></div>
+      <div class="sum-item nok"><b id="sNok">0</b><span>com pendência</span></div>
+    </div>
+
+    <div class="toolbar">
+      <input class="inp search" id="fBusca" placeholder="Buscar placa, motorista ou vistoriador" oninput="render()">
+      <div class="seg" id="fStatus">
+        <button class="on" data-v="todos">Todos</button>
+        <button data-v="ok">Conformes</button>
+        <button data-v="nok">Com pendência</button>
+      </div>
+      <div class="dates">
+        <span>De</span><input type="date" class="inp" id="fDe" onchange="render()">
+        <span>até</span><input type="date" class="inp" id="fAte" onchange="render()">
+      </div>
+      <button class="btn-sm" onclick="carregar()">Atualizar</button>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>Data</th><th>Placa</th><th>Motorista</th><th>Vistoriador</th><th>Baú · Pneus · EPIs</th><th>Status</th><th>Enviado em</th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div class="empty hidden" id="empty"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DETALHE -->
+<div class="overlay hidden" id="overlay" onclick="fechar()"></div>
+<div class="drawer hidden" id="drawer" role="dialog" aria-modal="true"></div>
+<div class="zoom hidden" id="zoom" onclick="this.classList.add('hidden')"><img id="zoomImg" alt=""></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// ================= FIREBASE =================
+// Cole aqui a MESMA configuração usada no checklist (index.html)
+const firebaseConfig = {
+  apiKey: "COLE_AQUI",
+  authDomain: "COLE_AQUI",
+  projectId: "COLE_AQUI",
+  storageBucket: "COLE_AQUI",
+  messagingSenderId: "COLE_AQUI",
+  appId: "COLE_AQUI"
+};
+// ============================================
+
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth();
+const db=firebase.firestore();
+
+let lista=[];
+let filtroStatus='todos';
+let atual=null; // checklist aberto no detalhe
+
+const FOTO_LABELS={
+  'bau-fechado':'Baú – fechado','bau-aberto':'Baú – aberto',
+  'pneus-d1':'Pneu dianteiro direito','pneus-d2':'Pneu traseiro direito',
+  'pneus-e1':'Pneu dianteiro esquerdo','pneus-e2':'Pneu traseiro esquerdo',
+  frente:'Frente com placa',traseira:'Traseira com placa'
+};
+const FOTO_ORDEM=Object.keys(FOTO_LABELS);
+
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+function fmtTs(ts){if(!ts||!ts.toDate)return'—';return ts.toDate().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});}
+function plate(p,lg){return `<span class="plate${lg?' lg':''}"><i></i><b>${esc(p||'—')}</b></span>`;}
+function sn(v){return v==='Sim'?'<span class="s">Sim</span>':v==='Não'?'<span class="n">Não</span>':'<span>—</span>';}
+
+// ---------- AUTH ----------
+$('senha').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+async function login(){
+  const btn=$('btnLogin');const msg=$('loginMsg');
+  msg.textContent='';btn.disabled=true;btn.textContent='Entrando...';
+  try{
+    await auth.signInWithEmailAndPassword($('email').value.trim(),$('senha').value);
+  }catch(e){
+    msg.textContent=['auth/invalid-credential','auth/wrong-password','auth/user-not-found','auth/invalid-email'].includes(e.code)
+      ?'E-mail ou senha incorretos.':'Não foi possível entrar ('+e.code+').';
+  }
+  btn.disabled=false;btn.textContent='Entrar';
+}
+function logout(){auth.signOut();}
+
+auth.onAuthStateChanged(u=>{
+  $('viewLogin').classList.toggle('hidden',!!u);
+  $('viewApp').classList.toggle('hidden',!u);
+  if(u){$('userEmail').textContent=u.email;carregar();}
+  else{lista=[];fechar();}
+});
+
+// ---------- DADOS ----------
+async function carregar(){
+  $('tbody').innerHTML='';
+  $('empty').classList.remove('hidden');$('empty').textContent='Carregando vistorias...';
+  try{
+    const snap=await db.collection('checklists').orderBy('criadoEm','desc').limit(500).get();
+    lista=snap.docs.map(d=>({id:d.id,...d.data()}));
+    render();
+  }catch(e){
+    console.error(e);
+    $('empty').textContent=e.code==='permission-denied'
+      ?'Seu e-mail ainda não tem acesso ao painel. Peça para incluí-lo na lista da equipe.'
+      :'Não foi possível carregar as vistorias. Verifique a conexão e clique em Atualizar.';
+  }
+}
+
+document.querySelectorAll('#fStatus button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#fStatus button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');filtroStatus=b.dataset.v;render();
+}));
+
+function render(){
+  const q=$('fBusca').value.trim().toLowerCase();
+  const de=$('fDe').value,ate=$('fAte').value;
+  const f=lista.filter(c=>{
+    if(filtroStatus==='ok'&&!c.conforme)return false;
+    if(filtroStatus==='nok'&&c.conforme)return false;
+    if(de&&(!c.dataVistoriaISO||c.dataVistoriaISO<de))return false;
+    if(ate&&(!c.dataVistoriaISO||c.dataVistoriaISO>ate))return false;
+    if(q&&!`${c.placa} ${c.motorista} ${c.vistoriador}`.toLowerCase().includes(q))return false;
+    return true;
+  });
+  $('sTotal').textContent=f.length;
+  $('sOk').textContent=f.filter(c=>c.conforme).length;
+  $('sNok').textContent=f.filter(c=>!c.conforme).length;
+
+  $('tbody').innerHTML=f.map(c=>`
+    <tr onclick="abrir('${c.id}')" tabindex="0" onkeydown="if(event.key==='Enter')abrir('${c.id}')">
+      <td class="c-data">${esc(c.dataVistoria)}</td>
+      <td class="c-placa">${plate(c.placa)}</td>
+      <td class="c-mot"><b>${esc(c.motorista)}</b></td>
+      <td class="c-vist">${esc(c.vistoriador)}</td>
+      <td class="c-ck"><span class="ck">${sn(c.bauLimpo)}${sn(c.pneusOk)}${sn(c.episOk)}</span></td>
+      <td class="c-status"><span class="status ${c.conforme?'ok':'nok'}">${c.conforme?'Conforme':'Pendência'}</span></td>
+      <td class="c-env muted">${fmtTs(c.criadoEm)}</td>
+    </tr>`).join('');
+  const vazio=!f.length;
+  $('empty').classList.toggle('hidden',!vazio);
+  if(vazio)$('empty').textContent=lista.length?'Nenhuma vistoria com esses filtros.':'Nenhuma vistoria enviada ainda.';
+}
+
+// ---------- DETALHE ----------
+async function abrir(id){
+  const c=lista.find(x=>x.id===id);if(!c)return;
+  atual={...c,fotos:{},assinatura:null};
+  $('overlay').classList.remove('hidden');
+  const d=$('drawer');d.classList.remove('hidden');
+  d.innerHTML=`
+    <div class="dr-hdr">
+      ${plate(c.placa,true)}
+      <div class="who"><div>${esc(c.motorista)}</div><small>Vistoria de ${esc(c.dataVistoria)}</small></div>
+      <button class="dr-close" onclick="fechar()" aria-label="Fechar">×</button>
+    </div>
+    <div class="dr-body">
+      <div class="card"><h3>Identificação</h3>
+        <div class="grid2">
+          <div class="kv"><p>Motorista</p><span>${esc(c.motorista)}</span></div>
+          <div class="kv"><p>CPF</p><span>${esc(c.cpf)}</span></div>
+          <div class="kv"><p>Placa</p><span>${esc(c.placa)}</span></div>
+          <div class="kv"><p>Data da vistoria</p><span>${esc(c.dataVistoria)}</span></div>
+          <div class="kv"><p>Vistoriador</p><span>${esc(c.vistoriador)}</span></div>
+          <div class="kv"><p>Enviado em</p><span>${fmtTs(c.criadoEm)}</span></div>
+        </div>
+      </div>
+      <div class="card"><h3>Resultado do checklist</h3>
+        <div class="row"><div>Baú limpo${c.bauObs?`<small>Obs: ${esc(c.bauObs)}</small>`:''}</div><span class="ck">${sn(c.bauLimpo)}</span></div>
+        <div class="row"><div>Pneus em boas condições${c.pneusObs?`<small>Obs: ${esc(c.pneusObs)}</small>`:''}</div><span class="ck">${sn(c.pneusOk)}</span></div>
+        <div class="row"><div>EPIs obrigatórios<small>Confirmados: ${episTexto(c)||'nenhum'}</small></div><span class="ck">${sn(c.episOk)}</span></div>
+      </div>
+      ${c.obsGeral?`<div class="card"><h3>Observações gerais</h3><div class="obs">${esc(c.obsGeral)}</div></div>`:''}
+      <div class="card"><h3>Fotos</h3><div id="drFotos" class="loading">Carregando fotos...</div></div>
+      <div class="card"><h3>Assinatura do motorista</h3><div id="drSig" class="loading">Carregando...</div></div>
+    </div>
+    <div class="dr-foot"><button class="btn-pdf" id="btnPdf" disabled onclick="baixarPDF()">Carregando...</button></div>`;
+  document.addEventListener('keydown',escFecha);
+
+  try{
+    const snap=await db.collection('checklists').doc(id).collection('fotos').get();
+    if(!atual||atual.id!==id)return;
+    snap.forEach(f=>{const x=f.data();if(f.id==='assinatura')atual.assinatura=x.imagem;else atual.fotos[f.id]=x.imagem;});
+    $('drFotos').className='photos';
+    $('drFotos').innerHTML=FOTO_ORDEM.map(k=>atual.fotos[k]
+      ?`<div class="ph" onclick="zoom('${k}')"><img src="${atual.fotos[k]}" alt="${FOTO_LABELS[k]}"><p>${FOTO_LABELS[k]}</p></div>`
+      :`<div class="ph none">Sem foto · ${FOTO_LABELS[k]}</div>`).join('');
+    $('drSig').className='sig';
+    $('drSig').innerHTML=atual.assinatura?`<img src="${atual.assinatura}" alt="Assinatura">`:'<span class="muted">Sem assinatura</span>';
+    const b=$('btnPdf');b.disabled=false;b.textContent='⬇ Baixar PDF';
+  }catch(e){
+    console.error(e);
+    $('drFotos').textContent='Não foi possível carregar as fotos.';
+    $('drSig').textContent='—';
+    $('btnPdf').textContent='Fotos indisponíveis';
+  }
+}
+function episTexto(c){
+  const e=c.epis||{};
+  return [e.capacete?'Capacete':null,e.sapatao?'Sapatão de segurança':null,e.colete?'Camiseta/colete refletivo':null].filter(Boolean).join(', ');
+}
+function zoom(k){$('zoomImg').src=atual.fotos[k];$('zoom').classList.remove('hidden');}
+function escFecha(e){if(e.key==='Escape'){if(!$('zoom').classList.contains('hidden'))$('zoom').classList.add('hidden');else fechar();}}
+function fechar(){
+  atual=null;
+  $('overlay').classList.add('hidden');$('drawer').classList.add('hidden');$('drawer').innerHTML='';
+  document.removeEventListener('keydown',escFecha);
+}
+
+// ---------- PDF (mesmo layout do checklist) ----------
+function baixarPDF(){
+  if(!atual)return;
+  try{buildPDF(atual);}catch(e){console.error(e);toast('Erro ao gerar o PDF.');}
+}
+function buildPDF(c){
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const N=[27,31,75],O=[242,101,34],G=[100,116,139],L=[241,245,249],W=[255,255,255],T=[30,41,59],GR=[22,163,74],R=[220,38,38];
+  let y=0;
+  function hdr(){
+    doc.setFillColor(...N);doc.rect(0,0,210,26,'F');
+    doc.setFillColor(...O);doc.rect(0,23,210,3,'F');
+    doc.setTextColor(...W);doc.setFontSize(15);doc.setFont('helvetica','bold');
+    doc.text('CHECKLIST EXTERNO PARA TERCEIROS',105,11,{align:'center'});
+    doc.setFontSize(8.5);doc.setFont('helvetica','normal');
+    doc.text('PortoEX Transportes · Checklist Externo para Terceiros',105,18.5,{align:'center'});
+    y=34;
+  }
+  function sec(title){
+    if(y>265){doc.addPage();hdr();}
+    doc.setFillColor(...N);doc.roundedRect(10,y,190,7.5,1,1,'F');
+    doc.setTextColor(...W);doc.setFontSize(8);doc.setFont('helvetica','bold');
+    doc.text(title.toUpperCase(),14,y+5.2);y+=11;
+  }
+  function row(items){
+    const cw=190/items.length;
+    items.forEach((item,i)=>{
+      const x=10+i*cw;
+      doc.setTextColor(...G);doc.setFontSize(7);doc.setFont('helvetica','normal');doc.text(item.label.toUpperCase(),x,y);
+      doc.setTextColor(...T);doc.setFontSize(9.5);doc.setFont('helvetica','bold');doc.text(String(item.value||'—'),x,y+5.5);
+    });
+    y+=11;
+  }
+  function ckRow(label,value,obsText){
+    if(y>270){doc.addPage();hdr();}
+    const isOk=value==='Sim';const clr=isOk?GR:R;
+    doc.setFillColor(...L);doc.roundedRect(10,y,190,9.5,1,1,'F');
+    doc.setFillColor(...clr);doc.roundedRect(10,y,3.5,9.5,1,1,'F');
+    doc.setTextColor(...T);doc.setFontSize(8.5);doc.setFont('helvetica','normal');doc.text(label,17,y+6);
+    doc.setFont('helvetica','bold');doc.setTextColor(...clr);doc.text(value||'—',197,y+6,{align:'right'});
+    y+=11.5;
+    if(obsText){doc.setFont('helvetica','italic');doc.setFontSize(7.5);doc.setTextColor(...G);doc.text('Obs: '+obsText,17,y);y+=6;}
+  }
+
+  hdr();
+  sec('1. Identificação');
+  row([{label:'Nome do Motorista',value:c.motorista},{label:'CPF',value:c.cpf}]);
+  row([{label:'Placa',value:c.placa},{label:'Data da Vistoria',value:c.dataVistoria},{label:'Vistoriador',value:c.vistoriador}]);
+  y+=4;
+  sec('2. Resultado do Checklist');
+  ckRow('Baú do veículo limpo?',c.bauLimpo,c.bauObs);
+  ckRow('Pneus em boas condições?',c.pneusOk,c.pneusObs);
+  const ep=episTexto(c);
+  ckRow('Possui EPIs obrigatórios?',c.episOk,ep?'Confirmados: '+ep:'');
+  y+=4;
+  if(c.obsGeral){
+    sec('Observações Gerais');
+    doc.setFillColor(...L);doc.roundedRect(10,y,190,14,1,1,'F');
+    doc.setTextColor(...T);doc.setFontSize(8.5);doc.setFont('helvetica','normal');
+    doc.text(doc.splitTextToSize(c.obsGeral,180),14,y+5.5);y+=18;
+  }
+  y+=2;sec('3. Registro Fotográfico');
+  const f=c.fotos;
+  const pl=[
+    [f['bau-fechado'],'Baú do veículo – fechado'],
+    [f['bau-aberto'],'Baú do veículo – aberto (estado interno)'],
+    [f['pneus-d1'],'Pneu dianteiro – lado direito'],
+    [f['pneus-d2'],'Pneu traseiro – lado direito'],
+    [f['pneus-e1'],'Pneu dianteiro – lado esquerdo'],
+    [f['pneus-e2'],'Pneu traseiro – lado esquerdo'],
+    [f.frente,'Veículo – Frente com placa'],
+    [f.traseira,'Veículo – Traseira com placa'],
+  ];
+  for(let i=0;i<pl.length;i+=2){
+    if(y+60>280){doc.addPage();hdr();y+=4;}
+    const[d1,c1]=pl[i];const[d2,c2]=pl[i+1]||[];
+    if(d1){try{doc.addImage(d1,d1.startsWith('data:image/png')?'PNG':'JPEG',10,y,88,50);}catch(e){}
+      doc.setFontSize(7);doc.setTextColor(...G);doc.setFont('helvetica','italic');doc.text(c1,10,y+53);}
+    if(d2){try{doc.addImage(d2,d2.startsWith('data:image/png')?'PNG':'JPEG',112,y,88,50);}catch(e){}
+      doc.setFontSize(7);doc.setTextColor(...G);doc.setFont('helvetica','italic');doc.text(c2,112,y+53);}
+    y+=60;
+  }
+  if(y+50>280){doc.addPage();hdr();}
+  y+=4;sec('4. Assinatura');
+  const x=10;
+  doc.setFillColor(...L);doc.roundedRect(x,y,85,32,1,1,'F');
+  if(c.assinatura){try{doc.addImage(c.assinatura,'PNG',x+2,y+2,81,24);}catch(e){}}
+  doc.setFontSize(7);doc.setTextColor(...G);doc.setFont('helvetica','normal');doc.text('Motorista',x+42.5,y+29,{align:'center'});
+  doc.setFontSize(8.5);doc.setFont('helvetica','bold');doc.setTextColor(...T);doc.text(c.motorista||'—',x+42.5,y+35,{align:'center'});
+
+  const pages=doc.getNumberOfPages();
+  const env=c.criadoEm&&c.criadoEm.toDate?c.criadoEm.toDate().toLocaleString('pt-BR'):'—';
+  for(let p=1;p<=pages;p++){
+    doc.setPage(p);
+    doc.setFillColor(...N);doc.rect(0,286,210,11,'F');
+    doc.setTextColor(...W);doc.setFontSize(7);doc.setFont('helvetica','normal');
+    doc.text('Enviado em '+env+' · PortoEX Transportes',105,292.5,{align:'center'});
+    doc.text(p+' / '+pages,200,292.5,{align:'right'});
+  }
+  doc.save('Vistoria_'+(c.placa||'Veiculo')+'_'+((c.dataVistoria||'').replace(/\//g,'-')||'semdata')+'.pdf');
+}
+</script>
+</body>
+</html>
